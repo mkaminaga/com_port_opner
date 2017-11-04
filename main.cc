@@ -9,15 +9,17 @@
 #include <wchar.h>
 #include <windows.h>
 
+
 bool OpenComPort8(int to_open_port_num) {
   if ((to_open_port_num <= 0) || (to_open_port_num > 8)) return false;
 
   // COM port is opened.
   HKEY hkey = nullptr;
   DWORD dwdisposition;
+
   LONG result = RegCreateKeyEx(
       HKEY_LOCAL_MACHINE,
-      L"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\COM Name Arbiter",
+      L"SYSTEM\\CurrentControlSet\\Control\\COM Name Arbiter",
       0,
       nullptr,
       REG_OPTION_VOLATILE,
