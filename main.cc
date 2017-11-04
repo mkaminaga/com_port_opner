@@ -9,7 +9,6 @@
 #include <wchar.h>
 #include <windows.h>
 
-
 bool OpenComPort8(int to_open_port_num) {
   if ((to_open_port_num <= 0) || (to_open_port_num > 8)) return false;
 
@@ -27,26 +26,48 @@ bool OpenComPort8(int to_open_port_num) {
       nullptr,
       &hkey,
       &dwdisposition);
-  if (result != ERROR_SUCCESS) return false;
+  if (result != ERROR_SUCCESS) {
+    return false;
+  }
 
   // COM port is read.
-  DWORD old_port_flags = 0x00;
-  DWORD size = static_cast<int>(sizeof(old_port_flags));
+  DWORD old_value = 0x00;
+  DWORD size = static_cast<DWORD>(sizeof(old_value));
+  DWORD type = 0;
 
   result = RegQueryValueEx(
       hkey,
       L"ComDB",
       nullptr,
-      nullptr,
-      (LPBYTE) &old_port_flags,
+      &type,
+      (LPBYTE) &old_value,
       &size);
-  if (result != ERROR_SUCCESS) return false;
+  if (result != ERROR_SUCCESS) {
+    wprintf(L"1\n");
+    RegCloseKey(hkey);
+    return false;
+  }
 
   // COP port flag is set.
-  uint8_t port_mask = ~(0x01 << (to_open_port_num - 1));
-  uint8_t port_flags = static_cast<uint8_t>(old_port_flags) & port_mask;
+  DWORD port_mask = ~(0x01 << (to_open_port_num - 1));
+  DWORD new_value = (old_value) & port_mask;
 
-  wprintf(L"Old: %d", static_cast<int>(old_port_flags));
+  result = RegSetValueEx(
+      hkey,
+      L"ComDB",
+      0,
+      REG_DWORD,
+      (CONST BYTE*) &new_value,
+      static_cast<DWORD>(sizeof(new_value)));
+  if (result != ERROR_SUCCESS) {
+    wprintf(L"2\n");
+    RegCloseKey(hkey);
+    return false;
+  }
+
+  // Info display.
+  wprintf(L"old value: 0x%x\n", static_cast<int>(old_value));
+  wprintf(L"new value: 0x%x\n", static_cast<int>(new_value));
 
   // COM port is closed.
   RegCloseKey(hkey);

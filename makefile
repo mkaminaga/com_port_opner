@@ -5,9 +5,9 @@ CC = C:\"Program Files (x86)"\"Microsoft Visual Studio\2017"\Community\VC\Tools\
 LINK = C:\"Program Files (x86)"\"Microsoft Visual Studio\2017"\Community\VC\Tools\MSVC\14.10.25017\bin\HostX86\x86\link.exe
 
 OBJDIR = build
-TARGET = com_port_opner.exe
-PDB = com_port_opner.pdb
-MAP = com_port_opner.map
+TARGET = com_open.exe
+PDB = com_open.pdb
+MAP = com_open.map
 RES =
 SRC = main.cc
 OBJ = $(OBJDIR)/main.obj
