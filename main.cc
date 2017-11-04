@@ -9,7 +9,7 @@
 #include <wchar.h>
 #include <windows.h>
 
-bool OpenComPort8(int to_open_port_num) {
+bool OpenComPort(int to_open_port_num) {
   if ((to_open_port_num <= 0) || (to_open_port_num > 8)) return false;
 
   // COM port is opened.
@@ -21,7 +21,7 @@ bool OpenComPort8(int to_open_port_num) {
       L"SYSTEM\\CurrentControlSet\\Control\\COM Name Arbiter",
       0,
       nullptr,
-      REG_OPTION_VOLATILE,
+      REG_OPTION_NON_VOLATILE,
       KEY_ALL_ACCESS,
       nullptr,
       &hkey,
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
   wscanf_s(L"%d", &to_open_port_num);
   fflush(stdin);
 
-  if (!OpenComPort8(to_open_port_num)) {
+  if (!OpenComPort(to_open_port_num)) {
     wprintf(L"Failed to open COM%d\n", to_open_port_num);
     system("pause");
 
