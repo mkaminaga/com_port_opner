@@ -31,8 +31,9 @@ bool OpenComPort(int to_open_port_num) {
   }
 
   // COM port is read.
-  DWORD old_value = 0x00;
-  DWORD size = static_cast<DWORD>(sizeof(old_value));
+  DWORD old_value = 0;
+  DWORD tmp_buf[256] = {0};
+  DWORD size = static_cast<DWORD>(sizeof(tmp_buf));
   DWORD type = 0;
 
   result = RegQueryValueEx(
@@ -40,13 +41,13 @@ bool OpenComPort(int to_open_port_num) {
       L"ComDB",
       nullptr,
       &type,
-      (LPBYTE) &old_value,
+      (LPBYTE) &tmp_buf,
       &size);
   if (result != ERROR_SUCCESS) {
-    wprintf(L"1\n");
     RegCloseKey(hkey);
     return false;
   }
+  old_value = tmp_buf[0];
 
   // COP port flag is set.
   DWORD port_mask = ~(0x01 << (to_open_port_num - 1));
@@ -60,7 +61,6 @@ bool OpenComPort(int to_open_port_num) {
       (CONST BYTE*) &new_value,
       static_cast<DWORD>(sizeof(new_value)));
   if (result != ERROR_SUCCESS) {
-    wprintf(L"2\n");
     RegCloseKey(hkey);
     return false;
   }
