@@ -10,7 +10,8 @@
 #include <windows.h>
 
 bool OpenComPort(int to_open_port_num) {
-  if ((to_open_port_num <= 0) || (to_open_port_num > 8)) return false;
+  to_open_port_num -= 1;
+  if ((to_open_port_num < 0) || (to_open_port_num > 127)) return false;
 
   // COM port is opened.
   HKEY hkey = nullptr;
@@ -31,9 +32,8 @@ bool OpenComPort(int to_open_port_num) {
   }
 
   // COM port is read.
-  DWORD old_value = 0;
-  DWORD tmp_buf[256] = {0};
-  DWORD size = static_cast<DWORD>(sizeof(tmp_buf));
+  DWORD old_value[4] = {0};
+  DWORD size = static_cast<DWORD>(sizeof(old_value));
   DWORD type = 0;
 
   result = RegQueryValueEx(
@@ -41,17 +41,21 @@ bool OpenComPort(int to_open_port_num) {
       L"ComDB",
       nullptr,
       &type,
-      (LPBYTE) &tmp_buf,
+      (LPBYTE) &old_value,
       &size);
   if (result != ERROR_SUCCESS) {
     RegCloseKey(hkey);
     return false;
   }
-  old_value = tmp_buf[0];
 
   // COP port flag is set.
-  DWORD port_mask = ~(0x01 << (to_open_port_num - 1));
-  DWORD new_value = (old_value) & port_mask;
+  DWORD new_value[4] = {0};
+  memcpy(new_value, old_value, sizeof(old_value));
+
+  int change_index = to_open_port_num / 32;
+  int bit_shift_num = to_open_port_num % 32;
+  DWORD bit_mask = ~(0x01 << bit_shift_num);
+  new_value[change_index] = (old_value[change_index]) & bit_mask;
 
   result = RegSetValueEx(
       hkey,
@@ -66,8 +70,16 @@ bool OpenComPort(int to_open_port_num) {
   }
 
   // Info display.
-  wprintf(L"old value: 0x%x\n", static_cast<int>(old_value));
-  wprintf(L"new value: 0x%x\n", static_cast<int>(new_value));
+  wprintf(L"old value: 0x%02x%02x%02x%02x\n",
+      static_cast<int>(old_value[3]),
+      static_cast<int>(old_value[2]),
+      static_cast<int>(old_value[1]),
+      static_cast<int>(old_value[0]));
+  wprintf(L"new value: 0x%02x%02x%02x%02x\n",
+      static_cast<int>(new_value[3]),
+      static_cast<int>(new_value[2]),
+      static_cast<int>(new_value[1]),
+      static_cast<int>(new_value[0]));
 
   // COM port is closed.
   RegCloseKey(hkey);
@@ -78,7 +90,7 @@ bool OpenComPort(int to_open_port_num) {
 int main(int argc, char* argv[]) {
 
   int to_open_port_num = 0;
-  wprintf(L"Which COM port to open? (1 - 8)\n");
+  wprintf(L"Which COM port to open? (1 - 128)\n");
   wprintf(L">");
   wscanf_s(L"%d", &to_open_port_num);
   fflush(stdin);
