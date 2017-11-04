@@ -88,7 +88,6 @@ bool OpenComPort(int to_open_port_num) {
 }
 
 int main(int argc, char* argv[]) {
-
   int to_open_port_num = 0;
   wprintf(L"Which COM port to open? (1 - 128)\n");
   wprintf(L">");
@@ -98,12 +97,10 @@ int main(int argc, char* argv[]) {
   if (!OpenComPort(to_open_port_num)) {
     wprintf(L"Failed to open COM%d\n", to_open_port_num);
     system("pause");
-
     return -1;
   }
 
   wprintf(L"Opened COM%d\n", to_open_port_num);
   system("pause");
-
   return 0;
 }
